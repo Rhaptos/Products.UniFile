@@ -1,0 +1,9 @@
+Since there are no skin components here, the skins layer has been disabled in the profile.
+
+If you want to place skins components here:
+ - visit profiles/default/skins.xml and uncomment the contents of the document
+ - in __init__.py, uncomment the registerDirectory lines
+ - place your components,
+ - remove this file,
+ - restart,
+ - and do a quickinstaller reinstall (or profile step application).

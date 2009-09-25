@@ -1,0 +1,32 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    i18n_domain="unifile">
+
+   <include package=".browser" />
+
+   <genericsetup:registerProfile
+      name="default"
+      title="UniFile"
+      directory="profiles/default"
+      description="Extension profile of UniFile"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      />
+
+   <browser:page
+      name="unifile_upload"
+      for=".interfaces.IUnifiedFile"
+      class=".File.UniFileUpload"
+      permission="cmf.ModifyPortalContent"
+      />
+
+   <browser:page
+      name="unifile_textedit"
+      for=".interfaces.IUnifiedFile"
+      class=".File.UniFileTextEdit"
+      permission="cmf.ModifyPortalContent"
+      />
+
+</configure>

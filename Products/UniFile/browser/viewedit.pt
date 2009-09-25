@@ -1,0 +1,185 @@
+<div xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      i18n:domain="plone"
+      tal:define="parent view/realParent;
+                  inEditableObject context/nearestRhaptosObject | nothing;
+                  inEditableObject python:bool(inEditableObject)"
+      tal:omit-tag="">
+<html lang="en"
+      metal:use-macro="here/main_template/macros/master">
+
+  <tal:comment tal:replace="nothing">
+    based generally on file_view with some file_edit, image_view, image_edit sprinkled in
+  </tal:comment>
+
+  <body>
+
+    <div metal:fill-slot="content_title_header">
+      <tal:title tal:define="modulemacro context/module_template/macros/moduletitle | nothing;
+                             wgmacro context/workspace_contents/macros/workspacetitle | nothing;
+                             macro python:inEditableObject and modulemacro or wgmacro;
+                             wgcontext python:not inEditableObject and parent"
+                   tal:condition="nocall:macro">
+        <metal:title metal:use-macro="macro" />
+      </tal:title>
+    </div>
+
+    <metal:block metal:fill-slot="super" tal:condition="show_border"
+                 tal:define="default_tab python:inEditableObject and 'contents' or 'view';
+                             tabprovider nocall:parent;
+                             actions python:here.portal_actions.listFilteredActionsFor(tabprovider);">
+      <div metal:use-macro="here/global_contentviews/macros/content_views">The content views</div>
+      <div metal:use-macro="here/global_contentviews/macros/content_actions">The content bar</div>
+    </metal:block>
+
+    <div metal:fill-slot="main"
+         tal:define="hasFile view/hasFile;
+                     size view/readableSize;
+                     content_type view/content_type;
+                     new view/isNew;">
+
+      <div class="return-link"
+           tal:condition="nocall:parent">
+        <a href="module_files"
+           tal:attributes="href string:${parent/absolute_url}/contents">
+          <span tal:condition="inEditableObject">&#171; Return to file listing for
+            <span tal:content="python:parent.portal_type.lower()">module</span></span>
+          <span tal:condition="not:inEditableObject">&#171; Return to complete contents listing for
+            <span tal:content="parent/Title">work group title</span></span>
+        </a>
+      </div>
+
+      <h1 tal:condition="not:new" tal:content="here/title_or_id" class="documentFirstHeading">
+        Title or id
+      </h1>
+      <h1 tal:condition="new"><i>[New file]</i></h1>
+
+      <div metal:use-macro="here/document_actions/macros/document_actions">
+        Document actions (print, sendto etc)
+      </div>
+      
+      <p tal:condition="hasFile">
+        <a href=""
+           tal:attributes="href string:$here_url/download">
+          <img src="" tal:attributes="src string:${portal_url}/file_icon.gif" alt="" />
+            <tal:block i18n:translate="label_click_to_get_file">
+              Click here to download the file
+            </tal:block>
+        </a>
+      </p>
+      
+      <small class="discreet" tal:condition="hasFile">
+        <span i18n:translate="label_size">Size</span>:
+        <span tal:condition="size"
+              tal:content="size">
+          257 KB
+        </span>.
+        
+        <span i18n:translate="label_file_type">File type</span>:
+        <span tal:content="content_type" i18n:translate="">
+          Content type
+        </span>
+      </small>
+
+      <form name="edit_form"
+            action="."
+            method="post"
+            enctype="multipart/form-data"
+            tal:attributes="action string:${context/absolute_url}/@@unifile_upload"
+            i18n:domain="unifile">
+
+        <fieldset>
+
+          <span>
+            <legend i18n:translate="legend_file_add"
+                    tal:condition="not:hasFile">Upload a new file</legend>
+            <legend i18n:translate="legend_file_replace"
+                    tal:condition="hasFile">Replace File</legend>
+          </span>
+
+          
+          <p class="formHelp" i18n:translate="description_edit_file">
+            Select a file from your local system with the "Browse" button, then press "Upload".
+          </p>
+          
+          <div><em i18n:translate="text_maximum_upload_50_mb"
+                   i18n:domain="rhaptos">Note: uploads must be smaller than 50 MB.</em></div>
+
+          <div>
+            <input type="file"
+                    id="file"
+                    name="file"
+                    size="30"
+                    tabindex=""
+                    tal:attributes="tabindex tabindex/next"
+                    />
+          </div>
+          <div class="formControls">
+            <input class="context"
+                    type="submit"
+                    tabindex=""
+                    name="form.button.Save"
+                    value="Upload"
+                    i18n:attributes="value"
+                    tal:attributes="tabindex tabindex/next;
+                                    disabled python:isLocked and 'disabled' or None;" />
+            <input class="standalone"
+                    i18n:domain="plone"
+                    type="submit"
+                    tabindex=""
+                    name="form.button.Cancel"
+                    value="Cancel"
+                    i18n:attributes="value"
+                    tal:attributes="tabindex tabindex/next"
+                    />
+          </div>
+        </fieldset>
+
+      </form>
+
+      <fieldset tal:condition="view/isViewableData">
+        <legend>
+          <span tal:condition="view/inViewMode">
+            <span i18n:translate="legend_file_view">File view</span>
+            <span tal:condition="view/isViewableText">
+              (<a href="edit" i18n:translate="label_edit"
+                  tal:attributes="href string:${context/absolute_url}/edit">edit</a>)
+            </span>
+          </span>
+          <span tal:condition="view/inEditMode">
+            <span i18n:translate="legend_file_edit">File edit</span>
+            (<a href="view" i18n:translate="label_view"
+                tal:attributes="href string:${context/absolute_url}/view">view</a>)
+          </span>
+        </legend>
+        <div class="field">
+          <img tal:condition="view/isViewableImage" src="image.gif"
+               tal:replace="structure context/tag">
+          <pre style="border-width: 0pt;"
+               tal:condition="python:view.inViewMode() and view.isViewableText()"
+               tal:content="view/data">inEditableObject text</pre>
+          <div tal:condition="view/inEditMode">
+            <form name="text_form"
+                  action="."
+                  method="post"
+                  tal:attributes="action string:${context/absolute_url}/@@unifile_textedit"
+                  i18n:domain="unifile">
+              <textarea name="text" rows="20" columns="80"
+                        tal:content="view/data">
+                inEditableObject text
+              </textarea>
+              <div class="formControls">
+                <input class="context" name="form.button.Save" value="Save" type="submit">
+                <input class="standalone" name="form.button.Cancel" value="Cancel" type="submit">
+              </div>
+            </form>
+          </div>
+        </div>
+      </fieldset>
+      
+    </div>
+  </body>
+</html>
+</div>
