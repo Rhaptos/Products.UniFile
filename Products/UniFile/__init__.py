@@ -36,5 +36,3 @@ def initialize(context):
         fti                = ftis,
         ).initialize(context)
 
-from Extensions import Install  # check syntax on startup
-del Install
