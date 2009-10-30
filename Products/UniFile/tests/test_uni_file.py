@@ -24,17 +24,21 @@ $Id: $
 """
 
 
+from Products.RhaptosTest import config
 import Products.UniFile
+config.products_to_load_zcml = [('configure.zcml', Products.UniFile),]
+config.products_to_install = ['UniFile']
 
-from Products.RhaptosTest.base import RhaptosTestCase
+from Products.RhaptosTest import base
 
 
-class TestUniFile(RhaptosTestCase):
+class TestUniFile(base.RhaptosTestCase):
 
-    products_to_load_zcml = [('configure.zcml', Products.UniFile),]
+    def afterSetUp(self):
+        pass
 
-    def setUp(self):
-        RhaptosTestCase.setUp(self)
+    def beforeTearDown(self):
+        pass
 
     def test_file(self):
         self.assertEqual(1, 1)
