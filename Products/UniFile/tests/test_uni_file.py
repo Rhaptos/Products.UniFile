@@ -53,7 +53,7 @@ class TestUniFile(base.RhaptosTestCase):
 
     def test_file_interface(self):
         # Make sure that the file content object implements the expected interface.
-        self.failUnless(IUnifiedFile.isImplementedBy(self.file))
+        self.failUnless(IUnifiedFile.providedBy(self.file))
 
     def test_file_type(self):
         # Make sure that the file reports its correct portal type.
