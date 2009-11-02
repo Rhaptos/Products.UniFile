@@ -28,17 +28,32 @@ from Products.RhaptosTest import config
 import Products.UniFile
 config.products_to_load_zcml = [('configure.zcml', Products.UniFile),]
 config.products_to_install = ['UniFile']
+config.extension_profiles = ['Products.UniFile:default']
 
+from Products.UniFile.interfaces import IUnifiedFile
 from Products.RhaptosTest import base
 
 
 class TestUniFile(base.RhaptosTestCase):
 
     def afterSetUp(self):
-        pass
+        # XXX:  This next line of code shouldn't be necessary.
+        # Products.RhaptosTest should already add this generic setup profile,
+        # as specified above.  But for some reason, it doesn't.  Please fix
+        # this.
+        self.addProfile('Products.UniFile:default')
+
+        # PloneTestCase already gives us a folder, so within that folder,
+        # create a UniFile.
+        self.folder.invokeFactory('UnifiedFile', 'file')
+        self.file = self.folder.file
 
     def beforeTearDown(self):
         pass
+
+    def test_file_interface(self):
+        # Make sure that the file content object implements the expected interface.
+        self.failUnless(IUnifiedFile.isImplementedBy(self.file))
 
     def test_file(self):
         self.assertEqual(1, 1)
