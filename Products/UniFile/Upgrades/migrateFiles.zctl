@@ -1,0 +1,100 @@
+from ZODB.POSException import ConflictError
+from time import sleep
+
+# we need to run as big user since we do a catalog query in the reinstall
+from AccessControl.SecurityManagement import newSecurityManager
+from Products.CMFCore.tests.base.security import AnonymousUser, OmnipotentUser
+user = OmnipotentUser().__of__(app)
+newSecurityManager(None, user)
+
+import transaction
+
+from Testing.makerequest import makerequest
+app=makerequest(app)
+
+from Products.CMFPlone.utils import _createObjectByType
+from DateTime import DateTime
+
+# monkeypatch RME logAction, since we don't want our upgrade recorded.
+# would do the event here, but can't seem to monkeypatch it perhaps the event machinery
+# is holding a reference to the original method before we can get to it.
+# possible to unregister the event, possibly, but I know how to do this and not that.
+def noophandler(*args, **kw): pass
+try:
+    from Products.RhaptosModuleEditor.ModuleEditor import ModuleEditor
+    ModuleEditor.logAction = noophandler
+except ImportError:
+  print "WARNING: RhaptosModuleEditor not found; if running for Rhaptos, abort immediately"
+
+# Turn off cache purges to avoid bunches of spam.
+# DEV ONLY; set this to 1 before running on dev systems, but not for the actual rollout.
+turnOffPurges = 1
+
+if turnOffPurges:
+    originalpurgeconfig = app.plone.portal_cache_settings.getProxyPurgeConfig()
+    app.plone.portal_cache_settings.setProxyPurgeConfig('no-purge')
+
+print "starting...", DateTime().rfc822()
+
+oldobjs = app.plone.portal_catalog(path=("/plone/GroupWorkspaces","/plone/Members"), portal_type=('Image', 'File'))
+count = 0
+alen = float(len(oldobjs))
+container = prevcontainer = None
+
+for brain in oldobjs:
+    prevcontainer = container
+    o = brain.getObject()
+    container = o.aq_parent
+    
+    # Conditional commit has to go at the top now, to group by parent
+    if container != prevcontainer:
+        # was if count % 5 == 0
+        try:
+            print "committing transaction at %.2f%% (%s/%i)" % (100*count/alen, count, alen)
+            transaction.commit()
+            sleep(5)
+        except ConflictError:
+            print "CONFLICT ERROR; skipping this container's items."
+            app._p_jar.sync()
+
+    print brain.getPath()
+
+    # get data
+    oid = o.getId()
+    data = o.get_data()
+    mod = o.ModificationDate()
+    owner = o.getWrappedOwner()
+    creators = o.Creators()
+    
+    # delete old
+    container.manage_delObjects([oid])
+    
+    # create new
+    newfile = _createObjectByType('UnifiedFile', container, oid)
+    newfile = container[oid]
+    
+    # set data
+    newfile.setImage(data)
+    newfile.setModificationDate(mod)
+    newfile.setCreators(creators)
+    
+    # set permissions
+    newfile.changeOwnership(owner)
+    
+    # reindex
+    # note: specific indexes will stop catalogMultiplex.reindexObject from doing notifyModified,
+    # which updates modification date
+    newfile.reindexObject(idxs=['modified', 'ModificationDate', 'getObjSize', 'Creator', 'allowedRolesAndUsers'])
+    
+    count += 1
+
+if turnOffPurges:
+    app.plone.portal_cache_settings.setProxyPurgeConfig(originalpurgeconfig)
+
+transaction.commit()
+
+oldobjs = app.plone.portal_catalog(path=("/plone/GroupWorkspaces","/plone/Members"), portal_type=('Image', 'File'))
+print "Remaining old objects: %s" % len(oldobjs)
+
+print "done", DateTime().rfc822()
+print "transaction complete"

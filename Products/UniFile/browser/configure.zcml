@@ -1,0 +1,20 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:five="http://namespaces.zope.org/five">
+
+   <browser:page
+      for="Products.UniFile.interfaces.IUnifiedFile"
+      name="unifile_view"
+      class="Products.UniFile.File.UniFileView"
+      template="viewedit.pt"
+      permission="zope2.View" />
+
+   <browser:page
+      for="Products.UniFile.interfaces.IUnifiedFile"
+      name="unifile_edit"
+      class="Products.UniFile.File.UniFileEdit"
+      template="viewedit.pt"
+      permission="cmf.ModifyPortalContent" />
+
+</configure>

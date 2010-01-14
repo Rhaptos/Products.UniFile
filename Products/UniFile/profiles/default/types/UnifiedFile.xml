@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+
+<object name="UnifiedFile"
+   meta_type="Factory-based Type Information with dynamic views">
+   <!-- FIXME FUTURE: i18n properties skipped; apparently not supported in Plone 2.5 -->
+  
+  <property name="title">Image/Other File</property>
+  <property name="description">A file is any information such as an image, program, graphic, animation, or sound to be included in a module.</property>
+  <property name="content_meta_type">UnifiedFile</property>
+  <property name="content_icon">file_icon.gif</property>
+  
+  <property name="product">UniFile</property>
+  <property name="factory">addUnifiedFile</property>
+  
+  <property name="immediate_view">unifile_view</property>
+  <property name="global_allow">True</property>
+  <property name="filter_content_types">False</property>
+  <property name="allow_discussion">False</property>
+
+  <property name="default_view">@@unifile_view</property>
+  <property name="view_methods">
+    <element value="@@unifile_view" />
+  </property>
+
+  <alias from="(Default)" to="(dynamic view)" />
+  <alias from="edit" to="@@unifile_edit" />
+  <alias from="view" to="@@unifile_view" />
+  
+  <action title="View" action_id="view" category="object" condition_expr=""
+          url_expr="string:${object_url}/" visible="False">
+    <permission value="View" />
+  </action>
+  <action title="Edit" action_id="edit" category="object" condition_expr=""
+          url_expr="string:${object_url}/edit" visible="True">
+    <permission value="Modify portal content" />
+  </action>
+
+</object>
+
+

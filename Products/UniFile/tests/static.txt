@@ -1,0 +1,17 @@
+Static Implementation Tests
+===========================
+ 	
+Let's just make sure that our static views are working as expected.
+	
+The first thing we need to do is to make sure the interfaces are
+being correctly implemented::
+ 	
+    >>> from Products.UniFile.interfaces import IUnifiedFile
+    >>> from Products.UniFile.File import UnifiedFile
+    >>> from zope.interface.verify import verifyClass
+    >>> verifyClass(IUnifiedFile, UnifiedFile)
+    True
+    >>> UnifiedFile.portal_type == 'UniFile'
+    True
+    >>> UnifiedFile.archetypes_name == 'File'
+    True
