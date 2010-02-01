@@ -1,2 +1,5 @@
+UniFile 0.2
+  - generic setup refactor. Rhaptos 2.0 release
+
 UniFile 0.1 (DATE)
   - initial version.
