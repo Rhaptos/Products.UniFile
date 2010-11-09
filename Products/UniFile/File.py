@@ -17,7 +17,7 @@ from Products.CMFCore.utils import getToolByName
 
 from zope.interface import implements
 from zope import event
-from zope.app.event import objectevent
+from zope.lifecycleevent import ObjectModifiedEvent
 from OFS.CopySupport import CopyError
 from zExceptions import BadRequest
 
@@ -55,7 +55,7 @@ class UnifiedFile(BaseType):
 
         return BaseType.download(self)
 
-atapi.registerType(UnifiedFile)
+atapi.registerType(UnifiedFile, 'UniFile')
 
 
 
@@ -151,7 +151,7 @@ class UniFileTextEdit(UniFileBrowserView):
         
         context.reindexObject()
         
-        event.notify(objectevent.ObjectModifiedEvent(context))
+        event.notify(ObjectModifiedEvent(context))
         
         request.response.redirect(context.absolute_url() + "/edit")
 
@@ -189,7 +189,7 @@ class UniFileUpload(UniFileBrowserView):
             context.reindexObject()
             
             if not temporary:  # used on new objects; don't say modified if just created
-                event.notify(objectevent.ObjectModifiedEvent(context))
+                event.notify(ObjectModifiedEvent(context))
         except (CopyError, BadRequest):
             context.setId(oldid)
             message = _("text_error_file_exists", "Can not upload: file of that name already exists.")
