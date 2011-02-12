@@ -112,27 +112,21 @@
                     id="file"
                     name="file"
                     size="30"
-                    tabindex=""
-                    tal:attributes="tabindex tabindex/next"
                     />
           </div>
           <div class="formControls">
             <input class="context"
                     type="submit"
-                    tabindex=""
                     name="form.button.Save"
                     value="Upload"
                     i18n:attributes="value"
-                    tal:attributes="tabindex tabindex/next;
-                                    disabled python:isLocked and 'disabled' or None;" />
+                    tal:attributes="disabled python:isLocked and 'disabled' or None;" />
             <input class="standalone"
                     i18n:domain="plone"
                     type="submit"
-                    tabindex=""
                     name="form.button.Cancel"
                     value="Cancel"
                     i18n:attributes="value"
-                    tal:attributes="tabindex tabindex/next"
                     />
           </div>
         </fieldset>
